@@ -49,9 +49,10 @@ class MiddlewareStack extends AbstractMiddleware
      * @internal
      * @param ServerRequestInterface $request
      * @param ResponseInterface $response
+     * @param mixed $error
      * @return ResponseInterface
      */
-    public function _loop(ServerRequestInterface $request, ResponseInterface $response)
+    public function _loop(ServerRequestInterface $request, ResponseInterface $response, $error = null)
     {
         $this->currentRequest = $request;
         $this->currentResponse = $response;
@@ -60,11 +61,45 @@ class MiddlewareStack extends AbstractMiddleware
             return $response;
         }
 
-        return NimoUtility::invoke(
-            $this->stack[$this->index++],
-            $request,
-            $response,
-            [$this, '_loop']
-        );
+        $currentMiddleware = $this->stack[$this->index];
+        $atErrorMiddleware = $currentMiddleware instanceof IErrorMiddleware;
+        $isError = !is_null($error);
+
+        $this->index++;
+
+        if ($isError) {
+            if (!$atErrorMiddleware) {
+                return $this->_loop($request, $response, $error);
+            }
+
+            try {
+                return call_user_func(
+                    $currentMiddleware,
+                    $error,
+                    $request,
+                    $response,
+                    [$this, '_loop']
+                );
+            } catch (\Exception $e) {
+                $error = $e;
+                return $this->_loop($request, $response, $error);
+            }
+        }
+
+        if ($atErrorMiddleware) {
+            return $this->_loop($request, $response, $error);
+        }
+
+        try {
+            return call_user_func(
+                $currentMiddleware,
+                $request,
+                $response,
+                [$this, '_loop']
+            );
+        } catch (\Exception $e) {
+            $error = $e;
+            return $this->_loop($request, $response, $error);
+        }
     }
 }

@@ -48,9 +48,13 @@ abstract class AbstractMiddleware implements IMiddleware
 
     protected function invokeCallback(callable $callback)
     {
-        return NimoUtility::invoke($callback, $this->request, $this->response, $this->next);
+        return call_user_func($callback, $this->request, $this->response, $this->next);
     }
 
+    /**
+     * @param $middleware
+     * @return MiddlewareStack
+     */
     public function append($middleware)
     {
         $stack = new MiddlewareStack();
@@ -60,6 +64,10 @@ abstract class AbstractMiddleware implements IMiddleware
             ->append($middleware);
     }
 
+    /**
+     * @param $middleware
+     * @return MiddlewareStack
+     */
     public function prepend($middleware)
     {
         $stack = new MiddlewareStack();
