@@ -41,9 +41,9 @@ abstract class AbstractMiddleware implements IMiddleware
 
     abstract protected function main();
 
-    protected function next(ServerRequestInterface $request = null, ResponseInterface $response = null)
+    protected function next(ServerRequestInterface $request = null, ResponseInterface $response = null, $error = null)
     {
-        return call_user_func($this->next, $request ?: $this->request, $response ?: $this->response);
+        return call_user_func($this->next, $request ?: $this->request, $response ?: $this->response, $error);
     }
 
     protected function invokeCallback(callable $callback)

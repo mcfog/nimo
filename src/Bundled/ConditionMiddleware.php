@@ -1,7 +1,5 @@
 <?php namespace Nimo\Bundled;
 
-use Nimo\IMiddleware;
-
 /**
  * User: mcfog
  * Date: 15/9/4
@@ -13,7 +11,7 @@ class ConditionMiddleware extends AbstractWrapperMiddleware
      */
     private $conditionCallback;
 
-    function __construct(callable $conditionCallback, IMiddleware $innerMiddleware)
+    function __construct(callable $conditionCallback, $innerMiddleware)
     {
         parent::__construct($innerMiddleware);
         $this->conditionCallback = $conditionCallback;

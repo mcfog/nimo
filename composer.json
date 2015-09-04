@@ -16,7 +16,12 @@
     },
     "require": {
         "php": ">=5.4.0",
-        "psr/http-message": "~1.0.0"
+        "psr/http-message": "^1.0"
+    },
+    "extra": {
+        "branch-alias": {
+            "dev-master": "0.1.x-dev"
+        }
     },
     "suggest": {
         "zendframework/zend-diactoros": "PSR-7 implementation and middleware runner"

@@ -1,7 +1,7 @@
 <?php namespace Nimo\Bundled;
 
 use Nimo\AbstractMiddleware;
-use Nimo\IMiddleware;
+use Nimo\NimoUtility;
 
 /**
  * User: mcfog
@@ -10,12 +10,12 @@ use Nimo\IMiddleware;
 abstract class AbstractWrapperMiddleware extends AbstractMiddleware
 {
     /**
-     * @var IMiddleware
+     * @var callable
      */
     protected $innerMiddleware;
 
-    function __construct(IMiddleware $innerMiddleware)
+    function __construct($innerMiddleware)
     {
-        $this->innerMiddleware = $innerMiddleware;
+        $this->innerMiddleware = NimoUtility::wrap($innerMiddleware);
     }
 }
