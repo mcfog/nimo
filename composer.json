@@ -1,0 +1,24 @@
+{
+    "name": "mcfog/nimo",
+    "description": "Nimo Is your Middleware Organizer",
+    "type": "library",
+    "license": "MIT",
+    "authors": [
+        {
+            "name": "McFog Wang",
+            "email": "mcfogw@gmail.com"
+        }
+    ],
+    "autoload": {
+        "psr-4": {
+            "Nimo\\": "src/"
+        }
+    },
+    "require": {
+        "php": ">=5.4.0",
+        "psr/http-message": "~1.0.0"
+    },
+    "suggest": {
+        "zendframework/zend-diactoros": "PSR-7 implementation and middleware runner"
+    }
+}
