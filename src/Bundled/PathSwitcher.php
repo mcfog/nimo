@@ -42,6 +42,10 @@ class PathSwitcher
         return new SwitchMiddleware($this);
     }
 
+    /**
+     * @param ServerRequestInterface $request
+     * @return callable $middleware
+     */
     public function __invoke(ServerRequestInterface $request)
     {
         $path = ltrim($request->getUri()->getPath(), '/');

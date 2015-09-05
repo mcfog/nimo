@@ -13,6 +13,13 @@ use Psr\Http\Message\ServerRequestInterface;
 
 interface IErrorMiddleware
 {
+    /**
+     * @param $error
+     * @param ServerRequestInterface $request
+     * @param ResponseInterface $response
+     * @param callable|null $next
+     * @return ResponseInterface
+     */
     public function __invoke(
         $error,
         ServerRequestInterface $request,

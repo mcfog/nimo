@@ -39,6 +39,9 @@ abstract class AbstractMiddleware implements IMiddleware
         return $this->__invoke($request, $response, $next);
     }
 
+    /**
+     * @return ResponseInterface
+     */
     abstract protected function main();
 
     protected function next(ServerRequestInterface $request = null, ResponseInterface $response = null, $error = null)

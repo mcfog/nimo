@@ -13,6 +13,12 @@ use Psr\Http\Message\ServerRequestInterface;
 
 interface IMiddleware
 {
+    /**
+     * @param ServerRequestInterface $request
+     * @param ResponseInterface $response
+     * @param callable|null $next
+     * @return ResponseInterface
+     */
     public function __invoke(
         ServerRequestInterface $request,
         ResponseInterface $response,
