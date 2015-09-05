@@ -67,36 +67,22 @@ class MiddlewareStack extends AbstractMiddleware
 
         $this->index++;
 
-        if ($isError) {
-            if (!$atErrorMiddleware) {
-                return $this->_loop($request, $response, $error);
-            }
-
-            try {
-                return call_user_func(
-                    $currentMiddleware,
-                    $error,
-                    $request,
-                    $response,
-                    [$this, '_loop']
-                );
-            } catch (\Exception $e) {
-                $error = $e;
-                return $this->_loop($request, $response, $error);
-            }
-        }
-
-        if ($atErrorMiddleware) {
+        if ($isError ^ $atErrorMiddleware) {
             return $this->_loop($request, $response, $error);
         }
 
+        $args = [
+            $request,
+            $response,
+            [$this, '_loop']
+        ];
+
+        if ($isError) {
+            array_unshift($args, $error);
+        }
+
         try {
-            return call_user_func(
-                $currentMiddleware,
-                $request,
-                $response,
-                [$this, '_loop']
-            );
+            return call_user_func_array($currentMiddleware, $args);
         } catch (\Exception $e) {
             $error = $e;
             return $this->_loop($request, $response, $error);
