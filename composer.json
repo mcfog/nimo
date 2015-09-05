@@ -3,6 +3,13 @@
     "description": "Nimo Is your Middleware Organizer",
     "type": "library",
     "license": "MIT",
+    "keywords": [
+        "middleware",
+        "psr",
+        "psr-7",
+        "http",
+        "http-message"
+    ],
     "authors": [
         {
             "name": "McFog Wang",
