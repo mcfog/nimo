@@ -12,7 +12,7 @@ class PathSwitcher
     protected $notFoundMiddleware;
     protected $paths = [];
 
-    function __construct($notFoundMiddleware)
+    public function __construct($notFoundMiddleware)
     {
         $this->notFoundMiddleware = NimoUtility::wrap($notFoundMiddleware);
     }
@@ -42,7 +42,7 @@ class PathSwitcher
         return new SwitchMiddleware($this);
     }
 
-    function __invoke(ServerRequestInterface $request)
+    public function __invoke(ServerRequestInterface $request)
     {
         $path = ltrim($request->getUri()->getPath(), '/');
         if (!isset($this->paths[$path])) {

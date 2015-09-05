@@ -11,7 +11,7 @@ class ConditionMiddleware extends AbstractWrapperMiddleware
      */
     private $conditionCallback;
 
-    function __construct(callable $conditionCallback, $innerMiddleware)
+    public function __construct(callable $conditionCallback, $innerMiddleware)
     {
         parent::__construct($innerMiddleware);
         $this->conditionCallback = $conditionCallback;

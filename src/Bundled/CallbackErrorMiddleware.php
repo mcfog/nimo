@@ -15,7 +15,7 @@ class CallbackErrorMiddleware implements IErrorMiddleware
      */
     protected $callback;
 
-    function __construct(callable $callback)
+    public function __construct(callable $callback)
     {
         $this->callback = $callback;
     }

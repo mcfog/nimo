@@ -14,7 +14,7 @@ abstract class AbstractWrapperMiddleware extends AbstractMiddleware
      */
     protected $innerMiddleware;
 
-    function __construct($innerMiddleware)
+    public function __construct($innerMiddleware)
     {
         $this->innerMiddleware = NimoUtility::wrap($innerMiddleware);
     }

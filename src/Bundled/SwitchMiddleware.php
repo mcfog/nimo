@@ -13,13 +13,17 @@ class SwitchMiddleware extends AbstractMiddleware
      */
     protected $switchCallback;
 
-    function __construct(callable $switchCallback)
+    public function __construct(callable $switchCallback)
     {
         $this->switchCallback = $switchCallback;
     }
 
     protected function main()
     {
-        return $this->invokeCallback($this->invokeCallback($this->switchCallback));
+        $callback = $this->invokeCallback($this->switchCallback);
+        if (!is_callable($callback)) {
+            throw new \RuntimeException('illegal switch result');
+        }
+        return $this->invokeCallback($callback);
     }
 }
