@@ -5,7 +5,11 @@
  * Date: 15/9/12
  */
 
+use Nimo\AbstractMiddleware;
+use Nimo\IErrorMiddleware;
 use Nimo\MiddlewareStack;
+use Nimo\NimoUtility;
+use Prophecy\Argument;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -37,6 +41,98 @@ class MiddlewareStackTest extends NimoTestCase
         $returnValue = $stack($dummies['reqDummy'], $dummies['resDummy'], $dummies['next']);
 
         $this->assertSame($dummies['resDummy4'], $returnValue);
+    }
+
+    public function testErrorHandler()
+    {
+        $skippedMiddlewareProphecy = $this->prophesize(AbstractMiddleware::class);
+        $skippedMiddlewareProphecy->__call('main', [])->shouldNotBeCalled();
+
+        $request = $this->prophesizeServerRequest()->reveal();
+        $request2 = $this->prophesizeServerRequest()->reveal();
+        $request3 = $this->prophesizeServerRequest()->reveal();
+        $response = $this->prophesizeResponse()->reveal();
+        $response2 = $this->prophesizeResponse()->reveal();
+        $response3 = $this->prophesizeResponse()->reveal();
+        $theError = new \stdClass();
+
+        $stack = new MiddlewareStack();
+        $errorTriggerMiddleware = function (
+            ServerRequestInterface $req,
+            ResponseInterface $res,
+            callable $next
+        ) use (
+            $request,
+            $request2,
+            $response,
+            $response2,
+            $theError
+        ) {
+            $this->assertSame($request, $req);
+            $this->assertSame($response, $res);
+
+            return $next($request2, $response2, $theError);
+        };
+
+        $errorHandle = function (
+            $error,
+            ServerRequestInterface $req,
+            ResponseInterface $res,
+            callable $next
+        ) use (
+            $request2,
+            $request3,
+            $response2,
+            $response3,
+            $theError
+        ) {
+            $this->assertSame($theError, $error);
+            $this->assertSame($request2, $req);
+            $this->assertSame($response2, $res);
+
+            return $next($request3, $response3);
+        };
+
+        $errorHandleMiddlewareProphecy = $this->prophesize(IErrorMiddleware::class);
+        $errorHandleMiddlewareProphecy
+            ->__call('__invoke', [
+                Argument::any(),
+                Argument::type(ServerRequestInterface::class),
+                Argument::type(ResponseInterface::class),
+                Argument::type('callable')
+            ])
+            ->will(function ($args) use ($errorHandle) {
+                list($err, $req, $res, $next) = $args;
+
+                return $errorHandle($err, $req, $res, $next);
+            })
+            ->shouldBeCalled();
+
+        $skippedErrorMiddlewareProphecy = $this->prophesize(IErrorMiddleware::class);
+        $skippedErrorMiddlewareProphecy
+            ->__call('__invoke', [
+                Argument::any(),
+                Argument::type(ServerRequestInterface::class),
+                Argument::type(ResponseInterface::class),
+                Argument::type('callable')
+            ])
+            ->shouldNotBeCalled();
+
+
+        $middleware = $stack
+            ->append($skippedErrorMiddlewareProphecy->reveal())
+            ->append($errorTriggerMiddleware)
+            ->append($skippedMiddlewareProphecy->reveal())
+            ->append($errorHandleMiddlewareProphecy->reveal());
+
+        $returnValue = call_user_func(
+            $middleware,
+            $request,
+            $response,
+            [NimoUtility::class, 'noopNext']
+        );
+
+        $this->assertSame($response3, $returnValue);
     }
 
     protected function makeDummies()
