@@ -20,7 +20,7 @@ class AbstractMiddlewareTest extends NimoTestCase
 
         $mProphecy = $this->prophesize()->willExtend(AbstractMiddleware::class);
         $mProphecy->__call('main', [])
-            ->will(function ($args, $obj, $method) use ($req, $res, $answerRes) {
+            ->will(function ($args, $obj, $method) use ($answerRes) {
                 return $answerRes;
             });
 
