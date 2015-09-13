@@ -1,14 +1,16 @@
-<?php namespace Nimo;
-
-use Prophecy\Prophet;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
+<?php namespace Nimo\Tests;
 
 /**
  * User: mcfog
  * Date: 15/9/12
  */
-class NimoUtilityTest extends \PHPUnit_Framework_TestCase
+
+use Nimo\NimoUtility;
+use Prophecy\Prophet;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+
+class NimoUtilityTest extends NimoTestCase
 {
 
     public function testNoopNext()

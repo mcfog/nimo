@@ -1,22 +1,23 @@
-<?php namespace Nimo;
-
-use Prophecy\Prophet;
-use Psr\Http\Message\ResponseInterface;
-use Psr\Http\Message\ServerRequestInterface;
+<?php namespace Nimo\Tests;
 
 /**
  * User: mcfog
  * Date: 15/9/12
  */
-class MiddlewareStackTest extends \PHPUnit_Framework_TestCase
-{
 
+use Nimo\MiddlewareStack;
+use Psr\Http\Message\ResponseInterface;
+use Psr\Http\Message\ServerRequestInterface;
+
+class MiddlewareStackTest extends NimoTestCase
+{
     public function testAppend()
     {
         $dummies = $this->makeDummies();
 
         $stack = new MiddlewareStack();
         $stack->append($dummies['middleware1']);
+        $stack->append($dummies['middleware0']);
         $stack->append($dummies['middleware2']);
 
         $returnValue = $stack($dummies['reqDummy'], $dummies['resDummy'], $dummies['next']);
@@ -30,6 +31,7 @@ class MiddlewareStackTest extends \PHPUnit_Framework_TestCase
 
         $stack = new MiddlewareStack();
         $stack->prepend($dummies['middleware2']);
+        $stack->prepend($dummies['middleware0']);
         $stack->prepend($dummies['middleware1']);
 
         $returnValue = $stack($dummies['reqDummy'], $dummies['resDummy'], $dummies['next']);
@@ -39,10 +41,9 @@ class MiddlewareStackTest extends \PHPUnit_Framework_TestCase
 
     protected function makeDummies()
     {
-        $prophet = new Prophet();
 
-        $reqProphecy = $prophet->prophesize(ServerRequestInterface::class);
-        $resProphecy = $prophet->prophesize(ResponseInterface::class);
+        $reqProphecy = $this->prophesizeServerRequest();
+        $resProphecy = $this->prophesizeResponse();
 
         $reqDummy = $reqProphecy->reveal();
         $reqDummy2 = $reqProphecy->reveal();
@@ -51,6 +52,14 @@ class MiddlewareStackTest extends \PHPUnit_Framework_TestCase
         $resDummy2 = $resProphecy->reveal();
         $resDummy3 = $resProphecy->reveal();
         $resDummy4 = $resProphecy->reveal();
+
+        $middleware0 = function (
+            ServerRequestInterface $req,
+            ResponseInterface $res,
+            callable $next
+        ) {
+            return $next();
+        };
 
         $middleware1 = function (
             ServerRequestInterface $req,
