@@ -40,19 +40,18 @@ class MiddlewareStack extends AbstractMiddleware
     {
         $this->index = 0;
 
-        $this->currentResponse = $this->_loop($this->request, $this->response);
+        $this->currentResponse = $this->loop($this->request, $this->response);
 
         return $this->next($this->currentRequest, $this->currentResponse);
     }
 
     /**
-     * @internal
      * @param ServerRequestInterface $request
      * @param ResponseInterface $response
      * @param mixed $error
      * @return ResponseInterface
      */
-    public function _loop(ServerRequestInterface $request, ResponseInterface $response, $error = null)
+    protected function loop(ServerRequestInterface $request, ResponseInterface $response, $error = null)
     {
         $this->currentRequest = $request;
         $this->currentResponse = $response;
@@ -68,13 +67,15 @@ class MiddlewareStack extends AbstractMiddleware
         $this->index++;
 
         if ($isError ^ $atErrorMiddleware) {
-            return $this->_loop($request, $response, $error);
+            return $this->loop($request, $response, $error);
         }
 
         $args = [
             $request,
             $response,
-            [$this, '_loop']
+            function (ServerRequestInterface $req, ResponseInterface $res, $error = null) {
+                return $this->loop($req, $res, $error);
+            }
         ];
 
         if ($isError) {
@@ -85,7 +86,7 @@ class MiddlewareStack extends AbstractMiddleware
             return call_user_func_array($currentMiddleware, $args);
         } catch (\Exception $e) {
             $error = $e;
-            return $this->_loop($request, $response, $error);
+            return $this->loop($request, $response, $error);
         }
     }
 }
