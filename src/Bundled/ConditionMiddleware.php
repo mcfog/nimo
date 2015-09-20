@@ -11,6 +11,10 @@ class ConditionMiddleware extends AbstractWrapperMiddleware
      */
     private $conditionCallback;
 
+    /**
+     * @param callable $conditionCallback receive param similar to middleware ($req, $res, $next), return boolean
+     * @param mixed $innerMiddleware the middleware to be executed while $conditionCallback returns truthy value
+     */
     public function __construct(callable $conditionCallback, $innerMiddleware)
     {
         parent::__construct($innerMiddleware);

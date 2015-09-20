@@ -34,11 +34,6 @@ abstract class AbstractMiddleware implements IMiddleware
         return $this->main();
     }
 
-    public function invoke(ServerRequestInterface $request, ResponseInterface $response, callable $next = null)
-    {
-        return $this->__invoke($request, $response, $next);
-    }
-
     /**
      * @return ResponseInterface
      */
@@ -55,6 +50,8 @@ abstract class AbstractMiddleware implements IMiddleware
     }
 
     /**
+     * append $middleware after this one, return the new $middlewareStack
+     *
      * @param $middleware
      * @return MiddlewareStack
      */
@@ -68,6 +65,8 @@ abstract class AbstractMiddleware implements IMiddleware
     }
 
     /**
+     * prepend $middleware before this one, return the new $middlewareStack
+     *
      * @param $middleware
      * @return MiddlewareStack
      */
@@ -80,6 +79,12 @@ abstract class AbstractMiddleware implements IMiddleware
             ->prepend($middleware);
     }
 
+    /**
+     * wrap this middleware with $conditionCallback (skip this when the callback return falsy value)
+     *
+     * @param callable $conditionCallback ($req, $res, $next)
+     * @return ConditionMiddleware
+     */
     public function when(callable $conditionCallback)
     {
         return new ConditionMiddleware($conditionCallback, $this);

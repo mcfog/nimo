@@ -11,6 +11,9 @@ class FixedResponseMiddleware extends AbstractMiddleware
 {
     protected $fixedResponse;
 
+    /**
+     * @param ResponseInterface $response always return this response
+     */
     public function __construct(ResponseInterface $response)
     {
         $this->fixedResponse = $response;

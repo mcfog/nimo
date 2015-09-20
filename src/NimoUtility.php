@@ -10,6 +10,10 @@ use Psr\Http\Message\ServerRequestInterface;
 abstract class NimoUtility
 {
     /**
+     * wrap the $middleware
+     * currently simple check callable
+     * might be adapter method if more than one middleware standard is supported in future
+     *
      * @param mixed $middleware
      * @return callable
      */
@@ -22,6 +26,13 @@ abstract class NimoUtility
         throw new \InvalidArgumentException('$middleware must be a valid middleware');
     }
 
+    /**
+     * a basic $next callback simply return the $response in param
+     *
+     * @param ServerRequestInterface $request
+     * @param ResponseInterface $response
+     * @return ResponseInterface
+     */
     public static function noopNext(
         /** @noinspection PhpUnusedParameterInspection */
         ServerRequestInterface $request,

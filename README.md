@@ -20,6 +20,6 @@ inspired by [relayphp](https://github.com/relayphp/Relay.Relay) and [zend-strati
 
 ### todos
 
-+ [ ] PHPDoc
-+ [ ] Tests
++ [o] PHPDoc
++ [o] Tests
 + [ ] Tutorials / Examples

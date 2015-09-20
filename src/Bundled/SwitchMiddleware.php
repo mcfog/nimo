@@ -13,6 +13,9 @@ class SwitchMiddleware extends AbstractMiddleware
      */
     protected $switchCallback;
 
+    /**
+     * @param callable $switchCallback receive ($res, $req, $next) and return the middleware to be executed
+     */
     public function __construct(callable $switchCallback)
     {
         $this->switchCallback = $switchCallback;

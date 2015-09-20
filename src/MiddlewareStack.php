@@ -24,12 +24,28 @@ class MiddlewareStack extends AbstractMiddleware
     protected $stack = [];
     protected $index;
 
+    /**
+     * append $middleware
+     * return $this
+     * note this method would modify $this
+     *
+     * @param mixed $middleware
+     * @return $this
+     */
     public function append($middleware)
     {
         $this->stack[] = NimoUtility::wrap($middleware);
         return $this;
     }
 
+    /**
+     * prepend $middleware
+     * return $this
+     * note this method would modify $this
+     *
+     * @param $middleware
+     * @return $this
+     */
     public function prepend($middleware)
     {
         array_unshift($this->stack, NimoUtility::wrap($middleware));
