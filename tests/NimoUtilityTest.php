@@ -28,4 +28,12 @@ class NimoUtilityTest extends NimoTestCase
 
         $this->assertSame($res, $returnValue);
     }
+
+    /**
+     * @expectedException \InvalidArgumentException
+     */
+    public function testWrap()
+    {
+        NimoUtility::wrap(null);
+    }
 }

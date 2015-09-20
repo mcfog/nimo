@@ -76,13 +76,11 @@ class MiddlewareStack extends AbstractMiddleware
             return $response;
         }
 
-        $currentMiddleware = $this->stack[$this->index];
-        $atErrorMiddleware = $currentMiddleware instanceof IErrorMiddleware;
+        $atErrorMiddleware = $this->stack[$this->index] instanceof IErrorMiddleware;
         $isError = !is_null($error);
-
-        $this->index++;
-
+        
         if ($isError ^ $atErrorMiddleware) {
+            $this->index++;//skip current middleware
             return $this->loop($request, $response, $error);
         }
 
@@ -98,11 +96,19 @@ class MiddlewareStack extends AbstractMiddleware
             array_unshift($args, $error);
         }
 
+        return $this->callCurrentMiddleware($args);
+    }
+
+    /**
+     * @param array $args
+     * @return ResponseInterface
+     */
+    protected function callCurrentMiddleware(array $args)
+    {
         try {
-            return call_user_func_array($currentMiddleware, $args);
+            return call_user_func_array($this->stack[$this->index++], $args);
         } catch (\Exception $e) {
-            $error = $e;
-            return $this->loop($request, $response, $error);
+            return $this->loop($this->currentRequest, $this->currentResponse, $e);
         }
     }
 }
