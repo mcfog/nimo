@@ -72,13 +72,18 @@ class MiddlewareStack extends AbstractMiddleware
         $this->currentRequest = $request;
         $this->currentResponse = $response;
 
+        $isError = !is_null($error);
+
         if (!isset($this->stack[$this->index])) {
+            if ($isError) {
+                throw MiddlewareErrorException::wrap($error);
+            }
+
             return $response;
         }
 
         $atErrorMiddleware = $this->stack[$this->index] instanceof IErrorMiddleware;
-        $isError = !is_null($error);
-        
+
         if ($isError ^ $atErrorMiddleware) {
             $this->index++;//skip current middleware
             return $this->loop($request, $response, $error);

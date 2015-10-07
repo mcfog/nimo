@@ -7,6 +7,7 @@
 
 use Nimo\AbstractMiddleware;
 use Nimo\IErrorMiddleware;
+use Nimo\MiddlewareErrorException;
 use Nimo\MiddlewareStack;
 use Nimo\NimoUtility;
 use Prophecy\Argument;
@@ -135,6 +136,48 @@ class MiddlewareStackTest extends NimoTestCase
         $this->assertSame($response3, $returnValue);
     }
 
+    public function testUnhandledError()
+    {
+        $request = $this->prophesizeServerRequest()->reveal();
+        $response = $this->prophesizeResponse()->reveal();
+        $theError = new \stdClass();
+
+        $errorTriggerMiddleware = function (
+            ServerRequestInterface $req,
+            ResponseInterface $res,
+            callable $next
+        ) use (
+            $request,
+            $response,
+            $theError
+        ) {
+            $this->assertSame($request, $req);
+            $this->assertSame($response, $res);
+
+            return $next($request, $response, $theError);
+        };
+
+        $stack = new MiddlewareStack();
+        $middleware = $stack->append($errorTriggerMiddleware);
+
+        try {
+            call_user_func(
+                $middleware,
+                $request,
+                $response,
+                [NimoUtility::class, 'noopNext']
+            );
+        } catch (MiddlewareErrorException $e) {
+            $this->assertSame($theError, $e->getError());
+            return;
+        } catch (\Exception $e) {
+            $this->fail('wrong exception raised when error is unhandled');
+        }
+
+        $this->fail('no exception raised when error is unhandled');
+    }
+
+
     protected function makeDummies()
     {
 
@@ -154,7 +197,7 @@ class MiddlewareStackTest extends NimoTestCase
             ResponseInterface $res,
             callable $next
         ) {
-            return $next();
+            return $next($req, $res);
         };
 
         $middleware1 = function (
