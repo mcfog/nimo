@@ -56,9 +56,7 @@ class MiddlewareStack extends AbstractMiddleware
     {
         $this->index = 0;
 
-        $this->currentResponse = $this->loop($this->request, $this->response);
-
-        return $this->next($this->currentRequest, $this->currentResponse);
+        return $this->loop($this->request, $this->response);
     }
 
     /**
@@ -79,7 +77,7 @@ class MiddlewareStack extends AbstractMiddleware
                 throw MiddlewareErrorException::wrap($error);
             }
 
-            return $response;
+            return $this->next($this->currentRequest, $this->currentResponse);
         }
 
         $atErrorMiddleware = $this->stack[$this->index] instanceof IErrorMiddleware;

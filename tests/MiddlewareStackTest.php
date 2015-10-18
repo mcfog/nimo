@@ -177,6 +177,36 @@ class MiddlewareStackTest extends NimoTestCase
         $this->fail('no exception raised when error is unhandled');
     }
 
+    public function testIntercept()
+    {
+        $request = $this->prophesizeServerRequest()->reveal();
+        $response = $this->prophesizeResponse()->reveal();
+        $response2 = $this->prophesizeResponse()->reveal();
+
+        $stack = new MiddlewareStack();
+        $interceptor = function (
+            ServerRequestInterface $req,
+            ResponseInterface $res,
+            callable $next
+        ) use ($response2) {
+            return $response2;
+        };
+        $failMiddleware = function () {
+            $this->fail('this middleware should not be runned');
+        };
+
+        $stack->append($interceptor);
+        $stack->append($failMiddleware);
+
+        $returnValue = call_user_func(
+            $stack,
+            $request,
+            $response,
+            $failMiddleware
+        );
+
+        $this->assertSame($response2, $returnValue);
+    }
 
     protected function makeDummies()
     {
