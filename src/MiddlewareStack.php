@@ -1,5 +1,8 @@
 <?php namespace Nimo;
 
+use Interop\Http\Server\MiddlewareInterface;
+use Nimo\Handlers\CallableHandler;
+use Nimo\Middlewares\CallableMiddleware;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -10,19 +13,22 @@ use Psr\Http\Message\ServerRequestInterface;
 class MiddlewareStack extends AbstractMiddleware
 {
     /**
-     * @var ServerRequestInterface
+     * @var CallableHandler
      */
-    protected $currentRequest;
-
+    protected $nextHandler;
     /**
-     * @var ResponseInterface
-     */
-    protected $currentResponse;
-    /**
-     * @var callable[]
+     * @var MiddlewareInterface[]
      */
     protected $stack = [];
     protected $index;
+
+    public function __construct()
+    {
+        $this->nextHandler = CallableHandler::wrap(function (ServerRequestInterface $request) {
+            return $this->loop($request);
+        });
+    }
+
 
     /**
      * append $middleware
@@ -34,7 +40,7 @@ class MiddlewareStack extends AbstractMiddleware
      */
     public function append($middleware)
     {
-        $this->stack[] = NimoUtility::wrap($middleware);
+        $this->stack[] = CallableMiddleware::wrap($middleware);
         return $this;
     }
 
@@ -48,70 +54,27 @@ class MiddlewareStack extends AbstractMiddleware
      */
     public function prepend($middleware)
     {
-        array_unshift($this->stack, NimoUtility::wrap($middleware));
+        array_unshift($this->stack, CallableMiddleware::wrap($middleware));
         return $this;
     }
 
-    protected function main()
+    protected function main(): ResponseInterface
     {
         $this->index = 0;
 
-        return $this->loop($this->request, $this->response);
+        return $this->loop($this->request);
     }
 
     /**
      * @param ServerRequestInterface $request
-     * @param ResponseInterface $response
-     * @param mixed $error
      * @return ResponseInterface
      */
-    protected function loop(ServerRequestInterface $request, ResponseInterface $response, $error = null)
+    protected function loop(ServerRequestInterface $request)
     {
-        $this->currentRequest = $request;
-        $this->currentResponse = $response;
-
-        $isError = !is_null($error);
-
         if (!isset($this->stack[$this->index])) {
-            if ($isError) {
-                throw MiddlewareErrorException::wrap($error);
-            }
-
-            return $this->next($this->currentRequest, $this->currentResponse);
+            return $this->delegate($request);
         }
 
-        $atErrorMiddleware = $this->stack[$this->index] instanceof IErrorMiddleware;
-
-        if ($isError ^ $atErrorMiddleware) {
-            $this->index++;//skip current middleware
-            return $this->loop($request, $response, $error);
-        }
-
-        $args = [
-            $request,
-            $response,
-            function (ServerRequestInterface $req, ResponseInterface $res, $error = null) {
-                return $this->loop($req, $res, $error);
-            }
-        ];
-
-        if ($isError) {
-            array_unshift($args, $error);
-        }
-
-        return $this->callCurrentMiddleware($args);
-    }
-
-    /**
-     * @param array $args
-     * @return ResponseInterface
-     */
-    protected function callCurrentMiddleware(array $args)
-    {
-        try {
-            return call_user_func_array($this->stack[$this->index++], $args);
-        } catch (\Exception $e) {
-            return $this->loop($this->currentRequest, $this->currentResponse, $e);
-        }
+        return $this->stack[$this->index++]->process($request, $this->nextHandler);
     }
 }

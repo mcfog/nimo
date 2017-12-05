@@ -1,6 +1,7 @@
 <?php namespace Nimo;
 
-use Nimo\Bundled\ConditionMiddleware;
+use Interop\Http\Server\MiddlewareInterface;
+use Interop\Http\Server\RequestHandlerInterface;
 use Psr\Http\Message\ResponseInterface;
 use Psr\Http\Message\ServerRequestInterface;
 
@@ -8,28 +9,24 @@ use Psr\Http\Message\ServerRequestInterface;
  * User: mcfog
  * Date: 15/9/4
  */
-abstract class AbstractMiddleware implements IMiddleware
+abstract class AbstractMiddleware implements MiddlewareInterface
 {
+    use MiddlewareTrait;
     /**
      * @var ServerRequestInterface
      */
     protected $request;
 
     /**
-     * @var ResponseInterface
+     * @var RequestHandlerInterface
      */
-    protected $response;
+    protected $handler;
 
-    /**
-     * @var callable
-     */
-    protected $next;
 
-    public function __invoke(ServerRequestInterface $request, ResponseInterface $response, callable $next = null)
+    public function process(ServerRequestInterface $request, RequestHandlerInterface $handler): ResponseInterface
     {
         $this->request = $request;
-        $this->response = $response;
-        $this->next = $next ?: [NimoUtility::class, 'noopNext'];
+        $this->handler = $handler;
 
         return $this->main();
     }
@@ -37,56 +34,15 @@ abstract class AbstractMiddleware implements IMiddleware
     /**
      * @return ResponseInterface
      */
-    abstract protected function main();
+    abstract protected function main(): ResponseInterface;
 
-    protected function next(ServerRequestInterface $request = null, ResponseInterface $response = null, $error = null)
+    protected function delegate(ServerRequestInterface $request = null)
     {
-        return call_user_func($this->next, $request ?: $this->request, $response ?: $this->response, $error);
+        return $this->handler->handle($request ?: $this->request);
     }
 
     protected function invokeCallback(callable $callback)
     {
-        return call_user_func($callback, $this->request, $this->response, $this->next);
-    }
-
-    /**
-     * append $middleware after this one, return the new $middlewareStack
-     *
-     * @param $middleware
-     * @return MiddlewareStack
-     */
-    public function append($middleware)
-    {
-        $stack = new MiddlewareStack();
-
-        return $stack
-            ->append($this)
-            ->append($middleware);
-    }
-
-    /**
-     * prepend $middleware before this one, return the new $middlewareStack
-     *
-     * @param $middleware
-     * @return MiddlewareStack
-     */
-    public function prepend($middleware)
-    {
-        $stack = new MiddlewareStack();
-
-        return $stack
-            ->prepend($this)
-            ->prepend($middleware);
-    }
-
-    /**
-     * wrap this middleware with $conditionCallback (skip this when the callback return falsy value)
-     *
-     * @param callable $conditionCallback ($req, $res, $next)
-     * @return ConditionMiddleware
-     */
-    public function when(callable $conditionCallback)
-    {
-        return new ConditionMiddleware($conditionCallback, $this);
+        return call_user_func($callback, $this->request, $this->handler);
     }
 }

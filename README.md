@@ -9,17 +9,11 @@ inspired by [relayphp](https://github.com/relayphp/Relay.Relay) and [zend-strati
 
 ### Features
 
-+ error handling
-  + trigger error via exception or `$next($req, $res, $error)`
-  + handle that with `IErrorMiddleware`
-  + skip normal middleware when there is an error, vice versa
-+ bundled middlewares
-  + `CallbackErrorMiddleware`: wrap error handling callback
-  + `ConditionMiddleware`: conditionally skip inner middleware
-  + `SwitchMiddleware`: choose a middleware to run (routing)
+TBD
 
 ### todos
 
 + [x] PHPDoc
-+ [x] Tests
++ [ ] Tests
++ [ ] Wait PSR-15 and switch interface from http-interop to psr
 + [ ] Tutorials / Examples

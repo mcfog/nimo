@@ -6,28 +6,21 @@
  */
 
 use Nimo\AbstractMiddleware;
-use Nimo\NimoUtility;
-use Prophecy\Argument;
 
 class AbstractMiddlewareTest extends NimoTestCase
 {
     public function testMiddleware()
     {
-        $responseProphecy = $this->prophesizeResponse();
-        $answerRes = $responseProphecy->reveal();
-        $req = $this->prophesizeServerRequest()->reveal();
-        $res = $responseProphecy->reveal();
+        $answerRes = $this->getResponseMock();
+        $req = $this->getRequestMock();
 
-        $mProphecy = $this->prophesize()->willExtend(AbstractMiddleware::class);
-        $mProphecy->__call('main', [])
-            ->will(function ($args, $obj, $method) use ($answerRes) {
-                return $answerRes;
-            });
-
-        $middleware = $mProphecy->reveal();
+        $middleware = $this->getMockForAbstractClass(AbstractMiddleware::class);
+        $middleware->expects(self::any())
+            ->method('main')
+            ->willReturn($answerRes);
 
         /** @noinspection PhpParamsInspection */
-        $returnValue = call_user_func($middleware, $req, $res, [NimoUtility::class, 'noopNext']);
+        $returnValue = $middleware->process($req, $this->throwHandler());
 
         $this->assertSame($answerRes, $returnValue);
     }

@@ -1,4 +1,6 @@
-<?php namespace Nimo\Bundled;
+<?php namespace Nimo\Middlewares;
+
+use Psr\Http\Message\ResponseInterface;
 
 /**
  * User: mcfog
@@ -21,14 +23,14 @@ class ConditionMiddleware extends AbstractWrapperMiddleware
         $this->conditionCallback = $conditionCallback;
     }
 
-    protected function main()
+    protected function main(): ResponseInterface
     {
         if ($this->invokeCallback($this->conditionCallback)) {
-            $response = $this->invokeCallback($this->innerMiddleware);
+            $response = $this->innerMiddleware->process($this->request, $this->handler);
         } else {
-            $response = $this->response;
+            $response = $this->delegate();
         }
 
-        return $this->next(null, $response);
+        return $response;
     }
 }

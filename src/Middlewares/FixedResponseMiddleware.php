@@ -1,4 +1,4 @@
-<?php namespace Nimo\Bundled;
+<?php namespace Nimo\Middlewares;
 
 use Nimo\AbstractMiddleware;
 use Psr\Http\Message\ResponseInterface;
@@ -19,8 +19,9 @@ class FixedResponseMiddleware extends AbstractMiddleware
         $this->fixedResponse = $response;
     }
 
-    protected function main()
+    protected function main(): ResponseInterface
     {
-        return $this->next(null, $this->fixedResponse);
+        return $this->fixedResponse;
     }
+
 }
